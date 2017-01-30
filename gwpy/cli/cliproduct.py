@@ -423,6 +423,16 @@ class CliProduct(object):
            fshift = float(arg_list.fshift)
            self.filter += "fshift(%.1f) " % fshift
 
+       whiten = False
+       if arg_list.whiten:
+            whiten = arg_list.whiten
+            self.filter += "whitening "            
+
+       fshift = 0
+       if arg_list.fshift:
+           fshift = float(arg_list.fshift)
+           self.filter += "fshift(%.1f) " % fshift
+
         # Get the data from NDS or Frames
         # time_groups is a list of timeseries index grouped by
         # start time for coherence like plots
