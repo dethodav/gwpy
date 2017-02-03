@@ -1857,12 +1857,16 @@ class TimeSeries(TimeSeriesBase):
         samp_rate = self.sample_rate.value
 
         samp_rate_out = samp_rate * 1.0 / factor
-        timeseries_out = TimeSeries(data,sample_rate = samp_rate_out)
+        out = TimeSeries(data)
+        out.__metadata_finalize__(self)
+        out.sample_rate = samp_rate_out
+        out._unit = self.unit
+        del out.times
         if central_freq != 0.0:
             shift_factor = central_freq * (1.0 - 1.0 / factor)
-            timeseries_out = timeseries_out.fshift(shift_factor)
+            out = out.fshift(shift_factor)
 
-        return timeseries_out
+        return out
 
 
 
