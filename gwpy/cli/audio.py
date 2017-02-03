@@ -34,11 +34,16 @@ class Audio(CliProduct):
     def init_cli(self, parser):
         """Set up the argument list for this product"""
         self.arg_chan1(parser)
+        self.arg_plot(parser)
         return
 
     def get_max_datasets(self):
         """Audio only handles 1 at a time""" #Currently
         return 1
+
+    def get_ylabel(self, args):
+        """Text for y-axis label"""#Seems irrelavent, but neccesary?
+        return 'Counts'
 
     def get_title(self):
         """Start of default super title, first channel is appended to it"""
@@ -49,8 +54,8 @@ class Audio(CliProduct):
            In this 'plot' is an audio file that is saved
         """
 
-        if arg_list.out:
-            out_file = arg_list.out
+        if args.out:
+            out_file = args.out
         else:
             out_file = "./gwpy.wav"       
 
