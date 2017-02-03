@@ -1803,6 +1803,9 @@ class TimeSeries(TimeSeriesBase):
             out_real = (signal.hilbert(data)*numpy.exp(2j*numpy.pi*shift_size*dt*t)).real
 
         out = TimeSeries(out_real,sample_rate=samp_rate)
+        out.__metadata_finalize__(self)
+        out._unit = self.unit
+        del out.times
 
         return out
 
