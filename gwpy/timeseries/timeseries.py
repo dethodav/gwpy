@@ -1853,14 +1853,11 @@ class TimeSeries(TimeSeriesBase):
         """    
 
 
-        data = self.value
         samp_rate = self.sample_rate.value
-
         samp_rate_out = samp_rate * 1.0 / factor
-        out = TimeSeries(data)
-        out.__metadata_finalize__(self)
+
+        out = self
         out.sample_rate = samp_rate_out
-        out._unit = self.unit
         del out.times
         if central_freq != 0.0:
             shift_factor = central_freq * (1.0 - 1.0 / factor)
