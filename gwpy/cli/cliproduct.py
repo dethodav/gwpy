@@ -170,7 +170,7 @@ class CliProduct(object):
         parser.add_argument('--fshift',
                             help='frequency to shift spectrum,' + 
                                  ' default no shift')
-        parser.add_argument('-w','--whiten',
+        parser.add_argument('-w','--whiten',action='store_true',
                             help='whiten data using the inverse ASD,' + 
                                  ' default no whitening')
         return
@@ -408,15 +408,13 @@ class CliProduct(object):
             highpass = float(arg_list.highpass)
             self.filter += "highpass(%.1f) " % highpass
 
-       whiten = False
-       if arg_list.whiten:
-            whiten = arg_list.whiten
+        if arg_list.whiten:
             self.filter += "whitening "            
 
-       fshift = 0
-       if arg_list.fshift:
-           fshift = float(arg_list.fshift)
-           self.filter += "fshift(%.1f) " % fshift
+        fshift = 0
+        if arg_list.fshift:
+            fshift = float(arg_list.fshift)
+            self.filter += "fshift(%.1f) " % fshift
 
         # Get the data from NDS or Frames
         # time_groups is a list of timeseries index grouped by
@@ -438,14 +436,14 @@ class CliProduct(object):
                 if highpass > 0:
                     data = data.highpass(highpass)
 
-                if whiten:
+                if arg_list.whiten:
                     if self.dur < 8:
                         data = data.whiten(self.dur/2.0,self.dur/4.0)
                     else:
                         data = data.whiten(4,2)
 
                 if fshift != 0:
-                    data = data.shift(fshift)
+                    data = data.fshift(fshift)
 
                 #THIS IS WHERE THE CALCULATION OCCURS
 
@@ -795,12 +793,17 @@ class CliProduct(object):
 
         self.getTimeSeries(args)
 
-        self.config_plot(args)
+#OVERRIDE
+        if self.get_action != 'audio':
+            self.config_plot(args)
 
         # this one is in the derived class
         self.gen_plot(args)
 
-        self.annotate_save_plot(args)
+#OVERRIDE
+        if self.get_action() != 'audio':
+            print self.get_action()
+            self.annotate_save_plot(args)
 
         self.is_interactive = False
         if args.interactive:
