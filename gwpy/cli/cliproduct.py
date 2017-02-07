@@ -166,7 +166,6 @@ class CliProduct(object):
         parser.add_argument('--highpass',
                             help='frequency for high pass butterworth,' +
                                  ' default no filter')
-        #LOWPASS AND BANDPASS ADDED BY JOE
         parser.add_argument('--fshift',
                             help='frequency to shift spectrum,' + 
                                  ' default no shift')
@@ -468,8 +467,6 @@ class CliProduct(object):
 
                 if fshift != 0:
                     data = data.fshift(fshift)
-
-                #THIS IS WHERE THE CALCULATION OCCURS
 
                 self.timeseries.append(data)
                 time_group.append(len(self.timeseries)-1)
