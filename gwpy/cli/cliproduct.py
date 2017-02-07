@@ -170,9 +170,6 @@ class CliProduct(object):
         parser.add_argument('--fshift',
                             help='frequency to shift spectrum,' + 
                                  ' default no shift')
-        parser.add_argument('-w','--whiten',action='store_true',
-                            help='whiten data using the inverse ASD,' + 
-                                 ' default no whitening')
         return
 
     def arg_chan1(self, parser):
@@ -196,6 +193,21 @@ class CliProduct(object):
 
         return
 
+    def arg_white(self,parser):
+        """Argyments for whitening with timeseries defaults"""
+        parser.add_argument('-w','--whiten',action='store_true',
+                            help='whiten data using the inverse ASD,' +
+                                 ' default no whitening')
+        parser.add_argument('--secpfft', default='1.0',
+                            help='length of fft in seconds ' +
+                                 'for each whitening calculation, ' +
+                                 'default = 1.0')
+        parser.add_argument('--overlap', default='0.5',
+                            help='Overlap as fraction [0-1), default=0.5')
+        return
+
+
+
     def arg_freq(self, parser):
         """Parameters for FFT based plots, with Spectral defaults"""
         self.is_freq_plot = True
@@ -215,6 +227,19 @@ class CliProduct(object):
         parser.add_argument('--overlap', default='0.9',
                             help='Overlap as fraction [0-1), default=0.9')
         return
+
+    def arg_audio(self,parser):
+        """Arguments that are audio specific"""
+        parser.add_argument('--out',
+                            help='output filename, type=ext (png, pdf, ' +
+                                 'jpg), default=gwpy.wav')
+        parser.add_argument('--samp_rate', default = 4096,
+                            help='sample rate of the audio file, ' + 
+                                 'default=4096 Hz')
+        parser.add_argument('--amp', default = .1,
+                            help='amplitude of output file, ' +
+                                 'default=.1')                   
+         
 
     def arg_plot(self, parser):
         """Add arguments common to all plots"""
@@ -409,6 +434,8 @@ class CliProduct(object):
             self.filter += "highpass(%.1f) " % highpass
 
         if arg_list.whiten:
+            sec_fft = float(arg_list.secpfft)
+            sec_overlap = sec_fft * float(arg_list.overlap)
             self.filter += "whitening "            
 
         fshift = 0
@@ -437,10 +464,7 @@ class CliProduct(object):
                     data = data.highpass(highpass)
 
                 if arg_list.whiten:
-                    if self.dur < 8:
-                        data = data.whiten(self.dur/2.0,self.dur/4.0)
-                    else:
-                        data = data.whiten(4,2)
+                    data = data.whiten(sec_fft,sec_overlap)
 
                 if fshift != 0:
                     data = data.fshift(fshift)
@@ -793,17 +817,12 @@ class CliProduct(object):
 
         self.getTimeSeries(args)
 
-#OVERRIDE
-        if self.get_action != 'audio':
-            self.config_plot(args)
+        self.config_plot(args)
 
         # this one is in the derived class
         self.gen_plot(args)
 
-#OVERRIDE
-        if self.get_action() != 'audio':
-            print self.get_action()
-            self.annotate_save_plot(args)
+        self.annotate_save_plot(args)
 
         self.is_interactive = False
         if args.interactive:
@@ -811,3 +830,25 @@ class CliProduct(object):
                         'image should be available.')
             self.plot.show()
             self.is_interactive = True
+
+    def makeAudio(self,args):
+        """Make the audio file, with the correct outputs.
+           Represses plot-specific functions.
+        """
+        if args.silent:
+            self.verbose = 0
+        else:
+            self.verbose = args.verbose
+
+        self.log(3, ('Verbosity level: %d' % self.verbose))
+
+        if self.verbose > 2:
+            print 'Arguments:'
+            for key, value in args.__dict__.iteritems():
+                print '%s = %s' % (key, value)
+
+        self.getTimeSeries(args)
+ 
+        self.gen_plot(args)
+
+
