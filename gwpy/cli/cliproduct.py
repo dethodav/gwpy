@@ -489,7 +489,6 @@ class CliProduct(object):
                 if fshift != 0:
                     data = data.fshift(fshift)
 
-
                 self.timeseries.append(data)
                 time_group.append(len(self.timeseries)-1)
             self.time_groups.append(time_group)

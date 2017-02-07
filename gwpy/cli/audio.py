@@ -43,7 +43,7 @@ class Audio(CliProduct):
         return 1
 
     def get_ylabel(self, args):
-        """Text for y-axis label"""#Seems irrelavent, but neccesary?
+        """Text for y-axis label"""
         return 'Counts'
 
     def get_title(self):
