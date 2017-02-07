@@ -34,7 +34,8 @@ class Audio(CliProduct):
     def init_cli(self, parser):
         """Set up the argument list for this product"""
         self.arg_chan1(parser)
-        self.arg_plot(parser)
+        self.arg_audio(parser)
+        self.arg_white(parser)
         return
 
     def get_max_datasets(self):
@@ -54,12 +55,15 @@ class Audio(CliProduct):
            In this 'plot' is an audio file that is saved
         """
 
+        samp_rate = float(args.samp_rate)
+        Amp = float(args.amp)
+
         if args.out:
             out_file = args.out
         else:
             out_file = "./gwpy.wav"       
 
-	self.timeseries[0].wavwrite(out_file)
+	self.timeseries[0].wavwrite(out_file,rate=samp_rate,amp=Amp)
 
 
         return
