@@ -458,6 +458,16 @@ class CliProduct(object):
             fshift = float(arg_list.fshift)
             self.filter += "fshift(%.1f) " % fshift
 
+        if arg_list.whiten:
+            sec_fft = float(arg_list.secpfft)
+            sec_overlap = sec_fft * float(arg_list.overlap)
+            self.filter += "whitening "            
+
+        fshift = 0
+        if arg_list.fshift:
+            fshift = float(arg_list.fshift)
+            self.filter += "fshift(%.1f) " % fshift
+
         # Get the data from NDS or Frames
         # time_groups is a list of timeseries index grouped by
         # start time for coherence like plots
@@ -486,6 +496,12 @@ class CliProduct(object):
                     self.filter = "band pass (%.1f-%.1f)" % (highpass, lowpass)
                 if arg_list.whiten:
                     data = data.whiten(sec_fft,sec_overlap)
+                if fshift != 0:
+                    data = data.fshift(fshift)
+
+                if arg_list.whiten:
+                    data = data.whiten(sec_fft,sec_overlap)
+
                 if fshift != 0:
                     data = data.fshift(fshift)
 
