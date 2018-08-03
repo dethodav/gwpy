@@ -1247,6 +1247,117 @@ class TimeSeries(TimeSeriesBase):
                                overlap=overlap, window=window,
                                nproc=nproc)
 
+    def transfer(self, other, fftlength=None, overlap=None,
+                  window='hann', **kwargs):
+        """Calculate the frequency-coherence between this `TimeSeries`
+        and another.
+        Parameters
+        ----------
+        other : `TimeSeries`
+            `TimeSeries` signal to calculate coherence with
+        fftlength : `float`, optional
+            number of seconds in single FFT, defaults to a single FFT
+            covering the full duration
+        overlap : `float`, optional
+            number of seconds of overlap between FFTs, defaults to the
+            recommended overlap for the given window (if given), or 0
+        window : `str`, `numpy.ndarray`, optional
+            window function to apply to timeseries prior to FFT,
+            see :func:`scipy.signal.get_window` for details on acceptable
+            formats
+        **kwargs
+            any other keyword arguments accepted by
+            :func:`matplotlib.mlab.cohere` except ``NFFT``, ``window``,
+            and ``noverlap`` which are superceded by the above keyword
+            arguments
+        Returns
+        -------
+        coherence : `~gwpy.frequencyseries.FrequencySeries`
+            the coherence `FrequencySeries` of this `TimeSeries`
+            with the other
+        Notes
+        -----
+        If `self` and `other` have difference
+        :attr:`TimeSeries.sample_rate` values, the higher sampled
+        `TimeSeries` will be down-sampled to match the lower.
+        See Also
+        --------
+        :func:`matplotlib.mlab.cohere`
+            for details of the coherence calculator
+        """
+        from matplotlib import mlab
+        from ..frequencyseries import FrequencySeries
+        # check sampling rates
+        if self.sample_rate.to('Hertz') != other.sample_rate.to('Hertz'):
+            sampling = min(self.sample_rate.value, other.sample_rate.value)
+            # resample higher rate series
+            if self.sample_rate.value == sampling:
+                other = other.resample(sampling)
+                self_ = self
+            else:
+                self_ = self.resample(sampling)
+        else:
+            sampling = self.sample_rate.value
+            self_ = self
+        # check fft lengths
+        if overlap is None:
+            overlap = 0
+        else:
+            overlap = int((overlap * self_.sample_rate).decompose().value)
+        if fftlength is None:
+            fftlength = int(self_.size/2. + overlap/2.)
+        else:
+            fftlength = int((fftlength * self_.sample_rate).decompose().value)
+        if window is not None:
+            kwargs['window'] = signal.get_window(window, fftlength)
+            
+        selffft = self.average_fft(fftlength, overlap, window)
+        otherfft = other.average_fft(fftlength, overlap, window)
+        size = min(selffft.size, otherfft.size)
+        tf = selffft[:size] / otherfft[:size]
+        
+        return tf
+
+    def transfer_spectrogram(self, other, stride, fftlength=None,
+                              overlap=None, window='hann', nproc=1):
+        """Calculate the coherence spectrogram between this `TimeSeries`
+        and other.
+
+        Parameters
+        ----------
+        other : `TimeSeries`
+            the second `TimeSeries` in this CSD calculation
+
+        stride : `float`
+            number of seconds in single PSD (column of spectrogram)
+
+        fftlength : `float`
+            number of seconds in single FFT
+
+        overlap : `float`, optional
+            number of seconds of overlap between FFTs, defaults to the
+            recommended overlap for the given window (if given), or 0
+
+        window : `str`, `numpy.ndarray`, optional
+            window function to apply to timeseries prior to FFT,
+            see :func:`scipy.signal.get_window` for details on acceptable
+            formats
+
+        nproc : `int`
+            number of parallel processes to use when calculating
+            individual coherence spectra.
+
+        Returns
+        -------
+        spectrogram : `~gwpy.spectrogram.Spectrogram`
+            time-frequency coherence spectrogram as generated from the
+            input time-series.
+        """
+        from ..spectrogram.transfer import from_timeseries
+        return from_timeseries(self, other, stride, fftlength=fftlength,
+                               overlap=overlap, window=window,
+                               nproc=nproc)
+
     def rms(self, stride=1):
         """Calculate the root-mean-square value of this `TimeSeries`
         once per stride.
