@@ -40,4 +40,5 @@ PRODUCTS = _od((x.action, x) for x in (
     Coherence,
     Coherencegram,
     Qtransform,
+    Transfergram,
 ))
