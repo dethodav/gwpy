@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright (C) Stefan Countryman (2018)
+# Copyright (C) Stefan Countryman (2018) Joseph Areeda (2015)
 #
 # This file is part of GWpy.
 #
@@ -65,6 +65,13 @@ class Transfergram(Spectrogram):
         if self.args.norm:
             return 'Normalized to {}'.format(self.args.norm)
         return 'Magnitude'
+
+    def get_stride(self):
+        fftlength = float(self.args.secpfft)
+        overlap = self.args.overlap  # fractional overlap
+        return max(self.duration / (self.width * 0.8),
+                   fftlength * (1 + (1-overlap)*32),
+                   fftlength * 2)
 
     def get_spectrogram(self):
         args = self.args
