@@ -1247,7 +1247,7 @@ class TimeSeries(TimeSeriesBase):
                                overlap=overlap, window=window,
                                nproc=nproc)
 
-    def transfer(self, other, fftlength=None, overlap=None,
+    def transfer_function(self, other, fftlength=None, overlap=None,
                   window='hann', **kwargs):
         """Calculate the frequency-coherence between this `TimeSeries`
         and another.
@@ -1287,29 +1287,11 @@ class TimeSeries(TimeSeriesBase):
         """
         from matplotlib import mlab
         from ..frequencyseries import FrequencySeries
-        # check sampling rates
-        if self.sample_rate.to('Hertz') != other.sample_rate.to('Hertz'):
-            sampling = min(self.sample_rate.value, other.sample_rate.value)
-            # resample higher rate series
-            if self.sample_rate.value == sampling:
-                other = other.resample(sampling)
-                self_ = self
-            else:
-                self_ = self.resample(sampling)
-        else:
-            sampling = self.sample_rate.value
-            self_ = self
         # check fft lengths
         if overlap is None:
             overlap = 0
-        else:
-            overlap = int((overlap * self_.sample_rate).decompose().value)
         if fftlength is None:
-            fftlength = int(self_.size/2. + overlap/2.)
-        else:
-            fftlength = int((fftlength * self_.sample_rate).decompose().value)
-        if window is not None:
-            kwargs['window'] = signal.get_window(window, fftlength)
+            fftlength = 0
             
         selffft = self.average_fft(fftlength, overlap, window)
         otherfft = other.average_fft(fftlength, overlap, window)

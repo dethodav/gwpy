@@ -81,7 +81,7 @@ def _from_timeseries(ts1, ts2, stride, fftlength=None, overlap=None,
         steptf = stepseries1.transfer_function(stepseries2, fftlength=fftlength,
                                         overlap=overlap, window=window,
                                         **kwargs)
-        out.value[step] = steptf.value
+        out.value[step] = abs(steptf.value)
 
     return out
 
