@@ -30,6 +30,7 @@ from .spectrogram import Spectrogram
 from .coherence import Coherence
 from .coherencegram import Coherencegram
 from .qtransform import Qtransform
+from .transfergram import Transfergram
 
 __author__ = 'Joseph Areeda <joseph.areeda@ligo.org>'
 
